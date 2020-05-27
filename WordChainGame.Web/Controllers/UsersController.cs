@@ -12,6 +12,7 @@ namespace WordChainGame.Web.Controllers
     using System.Net.Http;
     using System.Security.Claims;
     using System.Security.Cryptography;
+    using System.Text.RegularExpressions;
     using System.Threading.Tasks;
     using System.Web;
     using System.Web.Http;
@@ -59,7 +60,7 @@ namespace WordChainGame.Web.Controllers
         /// <param name="password">The password</param>
         /// <returns></returns>
         [Authorize]
-        [HttpDelete]
+        [HttpDelete, Route("Users")]
         public async Task<IHttpActionResult> DeleteAccount(string password)
         {
             var userId = User.Identity.GetUserId();
@@ -105,6 +106,12 @@ namespace WordChainGame.Web.Controllers
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
+            }
+            bool isEmailValid = Regex.IsMatch(model.Email, @"\A(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*@(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)\Z", RegexOptions.IgnoreCase);
+
+            if (!isEmailValid)
+            {
+                return BadRequest("Email is invalid");               
             }
 
             var user = new User { UserName = model.UserName, Email = model.Email, FullName = model.FullName };

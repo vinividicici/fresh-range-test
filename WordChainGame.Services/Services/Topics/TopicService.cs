@@ -51,7 +51,7 @@
 
         public PaginatedWordsResponseModel GetWords(int topicId, int top, int skip)
         {
-            var words = unitOfWork.Words.Get(x => x.TopicId == topicId, includeProperties: "Author");
+            var words = unitOfWork.Words.Get(x => x.TopicId == topicId && x.IsDeleted == false, includeProperties: "Author");
             var count = words.Count();
             var paginatedWords = words.Skip(skip).Take(top);
             var response = new PaginatedWordsResponseModel
@@ -71,12 +71,13 @@
                                        includeProperties: "Words")
                                   .SingleOrDefault();
 
-            var lastWord = topic.Words.OrderBy(w => w.DateCreated)
+            var lastWord = topic.Words.Where(w => w.IsDeleted == false)
+                                      .OrderBy(w => w.DateCreated)
                                       .LastOrDefault();
 
-            if(lastWord != null)
+            if (lastWord != null)
             {
-                var lastWordLastCharachter = lastWord.WordContent.First().ToString();
+                var lastWordLastCharachter = lastWord.WordContent.Last().ToString();
 
                 if (topic.Words.Where(w => !w.IsDeleted).Select(w => w.WordContent).Contains(model.Word))
                 {

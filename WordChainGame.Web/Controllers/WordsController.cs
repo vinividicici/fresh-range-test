@@ -106,7 +106,15 @@ namespace WordChainGame.Web.Controllers
                 return NotFound();
             }
 
-            words.Delete(wordId);
+            try
+            {
+                words.Delete(wordId);
+            }
+            catch (System.Exception ex)
+            {
+                return InternalServerError(ex);
+            }
+            
             return Ok();
         }
     }

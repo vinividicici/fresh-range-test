@@ -63,10 +63,17 @@ namespace WordChainGame.Web.Controllers
             {
                 return BadRequest(ModelState);
             }
+            // 
+            var existingTopic = this.unitOfWork.Topics.Get(t => t.Name == model.Name);
+
+            if ( existingTopic!=null )
+            {
+                return BadRequest("Topic with this name is already created");
+            }
 
             var topic = this.mapper.Map<Topic>(model);
             topic.AuthorId = User.Identity.GetUserId();
-            topic.WordsCount = 0;
+            topic.WordsCount = 0;           
 
             var added = this.unitOfWork.Topics.Insert(topic);
             this.unitOfWork.Commit();
@@ -142,12 +149,20 @@ namespace WordChainGame.Web.Controllers
                 return NotFound();
             }
 
-            if (this.unitOfWork.Words.GetByID(wordId) == null)
+            var existingWord = this.unitOfWork.Words.GetByID(wordId);
+
+            if (existingWord == null)
             {
                 return BadRequest("Invalid word id. ");
             }
 
             string authorId = User.Identity.GetUserId();
+
+            if (existingWord.AuthorId.Equals(authorId))
+            {
+                return BadRequest("You cannot mark your own word as inappropriate.");
+            }          
+           
             this.topics.RequestWordAsInappropriate(authorId, topicId, wordId);
             return Ok();
         }

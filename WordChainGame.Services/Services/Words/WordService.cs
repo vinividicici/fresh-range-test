@@ -16,19 +16,16 @@ namespace WordChainGame.Services.Services.Words
 
         public void Delete(int wordId)
         {
-            var inappropriateRequest = unitOfWork.InappropriateWordRequests
-                                                 .Get(filter: r => r.InappropriateWordId == wordId,
-                                                      includeProperties: "InappropriateWord.Topic")
-                                                 .ToList();
-            
-            for (int i = 0; i < inappropriateRequest.Count(); i++)
-            {
-                inappropriateRequest[i].IsInappropriate = true;
-            }
+            var wordToDelete = unitOfWork.Words.Get(r => r.Id == wordId);
 
-            inappropriateRequest.FirstOrDefault().InappropriateWord.Topic.WordsCount--;
-            inappropriateRequest.FirstOrDefault().InappropriateWord.IsDeleted = true;
+            var topic = unitOfWork.Topics.GetByID(wordToDelete.FirstOrDefault().TopicId);          
+
+            wordToDelete.FirstOrDefault().IsDeleted = true;
+
+            topic.WordsCount--;            
+
             unitOfWork.Commit();
+            
         }
 
         public void DeleteInappropriateWordRequestForWord(int wordId)
